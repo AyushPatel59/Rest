@@ -1,7 +1,7 @@
 package com.example.demo.api;
 
 import java.util.List;
-import java.util.Optional;
+
 
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.web.bind.annotation.DeleteMapping;
@@ -11,37 +11,48 @@ import org.springframework.web.bind.annotation.PostMapping;
 import org.springframework.web.bind.annotation.RequestBody;
 import org.springframework.web.bind.annotation.RestController;
 
+import com.example.demo.dto.DeviceDTO;
+import com.example.demo.exception.DeviceException;
 import com.example.demo.model.Device;
-import com.example.demo.repository.DeviceRepository;
+
+import com.example.demo.service.DeviceService;
 
 @RestController
 public class DeviceApi {
 
 	@Autowired
-	DeviceRepository deviceRepository;
+	DeviceService deviceService;
 	
 	@PostMapping("/addDevice")
-	public String addDevice(@RequestBody Device device)
+	public String addDevice(@RequestBody Device device) throws DeviceException
 	{
-		deviceRepository.save(device);
-		return "Device added with id "+device.getDeviceId();
+		DeviceDTO deviceToAdd = new DeviceDTO();
+		deviceToAdd.setDeviceId(device.getDeviceId());
+		deviceToAdd.setDeviceName(device.getDeviceName());
+		deviceToAdd.setDeviceType(device.getDeviceType());
+		deviceToAdd.setOsVersion(device.getOsVersion());
+		
+		String toReturn = deviceService.addDevice(deviceToAdd);
+		return toReturn;
 	}
 	
 	@GetMapping("/device/{deviceId}")
-	public Optional<Device> getDevice(@PathVariable Integer deviceId)
+	public DeviceDTO getDevice(@PathVariable Integer deviceId) throws DeviceException
 	{
-		Optional<Device> device = deviceRepository.findById(deviceId);
+		DeviceDTO device= deviceService.getDeviceById(deviceId);
 		return device;
 	}
 	@GetMapping("/allDevices")
-	public List<Device> getAllDevices()
+	public List<DeviceDTO> getAllDevices() throws DeviceException
 	{
-		return deviceRepository.findAll();
+		List<DeviceDTO> devices = deviceService.getAllDevices();
+		return devices;
 	}
 	@DeleteMapping("/deleteDevice/{deviceId}")
-	public String deleteDevice(@PathVariable Integer deviceId)
+	public String deleteDevice(@PathVariable Integer deviceId) throws DeviceException
 	{
-		deviceRepository.deleteById(deviceId);
-		return "Device with id "+deviceId+" deleted Successfully!";
+		String toReturn = deviceService.deleteDeviceById(deviceId);
+		return toReturn;
+		
 	}
 }
